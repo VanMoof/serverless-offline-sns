@@ -10,6 +10,7 @@ import {
   arrayify,
   createAttr,
   createMetadata,
+  createSnsLambdaEvent,
   createSnsTopicEvent,
   parseMessageAttributes,
   parseAttributes,
@@ -369,7 +370,16 @@ export class SNSServer implements ISNSServer {
             return this.publishHttp(event, sub, isRaw);
           }
           if (protocol === "sqs") {
-            return this.publishSqs(event, sub, messageAttributes);
+            return this.publishSqs(JSON.stringify(
+              createSnsLambdaEvent(
+                topicArn,
+                sub.SubscriptionArn,
+                subject,
+                message,
+                messageId,
+                messageAttributes
+              )
+            ), sub, messageAttributes);
           }
           throw new Error(
             `Protocol '${protocol}' is not supported by serverless-offline-sns`
